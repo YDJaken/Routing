@@ -30,9 +30,9 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>Util</name>
+			<name>com</name>
 			<type>2</type>
-			<location>/home/dy/eclipse-workspace/Util/Util</location>
+			<location>/home/dy/eclipse-workspace/JavaUtil/com</location>
 		</link>
 	</linkedResources>
 </projectDescription>
