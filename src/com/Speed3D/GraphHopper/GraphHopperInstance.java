@@ -1,13 +1,19 @@
 package com.Speed3D.GraphHopper;
 
+import java.io.Serializable;
+
 import com.graphhopper.GHRequest;
 import com.graphhopper.GraphHopper;
 import com.graphhopper.reader.dem.ElevationProvider;
 import com.graphhopper.routing.util.EncodingManager;
 import com.graphhopper.util.Parameters.Routing;
 
-public class GraphHopperInstance {
+public class GraphHopperInstance implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 3244935579291336567L;
 	private static GraphHopper hopper;
 	static final double highWaySpeed = 80.0;
 	static final String roadStatusURL = "http://192.168.1.15:8080/graphhopperRouting/roudStatusServlet";
@@ -25,11 +31,21 @@ public class GraphHopperInstance {
 		GraphHopperInstance.load();
 	}
 
+	// 使用双重校验锁方式实现单例
 	public static GraphHopper getInstance() {
 		if (hopper == null) {
-			hopper = new myGraphHopper();
-			init();
+			synchronized (GraphHopperInstance.class) {
+				if (hopper == null) {
+					hopper = new myGraphHopper();
+					init();
+				}
+			}
 		}
+		return hopper;
+	}
+
+	// 防止序列化破坏单例模式
+	private Object readResolve() {
 		return hopper;
 	}
 
@@ -89,6 +105,6 @@ public class GraphHopperInstance {
 
 	// 可接受的参数 car,foot,bike,bike2,mtb,racingbike,motorcycle
 	public static void setEncodingManager(String manager) {
-		hopper.setEncodingManager(new EncodingManager(manager,8));
+		hopper.setEncodingManager(new EncodingManager(manager, 8));
 	}
 }
