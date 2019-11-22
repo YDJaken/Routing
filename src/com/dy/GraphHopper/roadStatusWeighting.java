@@ -55,15 +55,14 @@ public class roadStatusWeighting extends AbstractWeighting {
 		if (flagEncoder instanceof DataFlagEncoder) {
 			speed = dataConfig.getSpeed(edgeState);
 		} else {
-			speed = reverse ? flagEncoder.getReverseSpeed(edgeState.getFlags())
-					: flagEncoder.getSpeed(edgeState.getFlags());
+			speed = flagEncoder.getMaxSpeed();
 		}
 		speed *= test;
 		if (speed == 0)
 			return Double.POSITIVE_INFINITY;
 		double time = edgeState.getDistance() / speed * highWayWeighting.SPEED_CONV;
 		// add direction penalties at start/stop/via points
-		boolean unfavoredEdge = edgeState.getBool(EdgeIteratorState.K_UNFAVORED_EDGE, false);
+		boolean unfavoredEdge = edgeState.get(EdgeIteratorState.UNFAVORED_EDGE);
 		if (unfavoredEdge)
 			time += headingPenalty;
 
@@ -77,14 +76,13 @@ public class roadStatusWeighting extends AbstractWeighting {
 			if (speed == 0)
 				return Long.MAX_VALUE;
 
-			double maxspeed = ((DataFlagEncoder) flagEncoder).getMaxspeed(edgeState,
-					((DataFlagEncoder) flagEncoder).getAccessType("motor_vehicle"), reverse);
+			double maxspeed = ((DataFlagEncoder) flagEncoder).getMaxPossibleSpeed();
 			if (maxspeed > 0 && speed > maxspeed)
 				speed = maxspeed;
 
 			long timeInMillis = (long) (edgeState.getDistance() / speed * highWayWeighting.SPEED_CONV);
 
-			boolean unfavoredEdge = edgeState.getBool(EdgeIteratorState.K_UNFAVORED_EDGE, false);
+			boolean unfavoredEdge = edgeState.get(EdgeIteratorState.UNFAVORED_EDGE);
 			if (unfavoredEdge)
 				timeInMillis += Math
 						.round(this.map.getDouble(Routing.HEADING_PENALTY, Routing.DEFAULT_HEADING_PENALTY) * 1000);
@@ -96,7 +94,7 @@ public class roadStatusWeighting extends AbstractWeighting {
 			return timeInMillis;
 		} else {
 			long time = 0;
-			boolean unfavoredEdge = edgeState.getBool(EdgeIteratorState.K_UNFAVORED_EDGE, false);
+			boolean unfavoredEdge = edgeState.get(EdgeIteratorState.UNFAVORED_EDGE);
 			if (unfavoredEdge)
 				time += headingPenaltyMillis;
 			return time + super.calcMillis(edgeState, reverse, prevOrNextEdgeId);

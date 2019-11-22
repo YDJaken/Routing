@@ -19,8 +19,8 @@ package com.dy.GraphHopper;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.graphhopper.util.shapes.GHPoint;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.LineString;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.LineString;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.graphhopper.GHResponse;
@@ -70,96 +70,96 @@ public class WebHelper {
 	}
 
 	public static PointList decodePolyline(String encoded, int initCap, boolean is3D) {
-		PointList poly = new PointList(initCap, is3D);
-		int index = 0;
-		int len = encoded.length();
-		int lat = 0, lng = 0, ele = 0;
-		while (index < len) {
-			// latitude
-			int b, shift = 0, result = 0;
-			do {
-				b = encoded.charAt(index++) - 63;
-				result |= (b & 0x1f) << shift;
-				shift += 5;
-			} while (b >= 0x20);
-			int deltaLatitude = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
-			lat += deltaLatitude;
+        PointList poly = new PointList(initCap, is3D);
+        int index = 0;
+        int len = encoded.length();
+        int lat = 0, lng = 0, ele = 0;
+        while (index < len) {
+            // latitude
+            int b, shift = 0, result = 0;
+            do {
+                b = encoded.charAt(index++) - 63;
+                result |= (b & 0x1f) << shift;
+                shift += 5;
+            } while (b >= 0x20);
+            int deltaLatitude = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+            lat += deltaLatitude;
 
-			// longitute
-			shift = 0;
-			result = 0;
-			do {
-				b = encoded.charAt(index++) - 63;
-				result |= (b & 0x1f) << shift;
-				shift += 5;
-			} while (b >= 0x20);
-			int deltaLongitude = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
-			lng += deltaLongitude;
+            // longitute
+            shift = 0;
+            result = 0;
+            do {
+                b = encoded.charAt(index++) - 63;
+                result |= (b & 0x1f) << shift;
+                shift += 5;
+            } while (b >= 0x20);
+            int deltaLongitude = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+            lng += deltaLongitude;
 
-			if (is3D) {
-				// elevation
-				shift = 0;
-				result = 0;
-				do {
-					b = encoded.charAt(index++) - 63;
-					result |= (b & 0x1f) << shift;
-					shift += 5;
-				} while (b >= 0x20);
-				int deltaElevation = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
-				ele += deltaElevation;
-				poly.add((double) lat / 1e5, (double) lng / 1e5, (double) ele / 100);
-			} else
-				poly.add((double) lat / 1e5, (double) lng / 1e5);
-		}
-		return poly;
-	}
-
+            if (is3D) {
+                // elevation
+                shift = 0;
+                result = 0;
+                do {
+                    b = encoded.charAt(index++) - 63;
+                    result |= (b & 0x1f) << shift;
+                    shift += 5;
+                } while (b >= 0x20);
+                int deltaElevation = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+                ele += deltaElevation;
+                poly.add((double) lat / 1e5, (double) lng / 1e5, (double) ele / 100);
+            } else
+                poly.add((double) lat / 1e5, (double) lng / 1e5);
+        }
+        return poly;
+    }
+	
 	public static String encodePolyline(PointList poly) {
-		if (poly.isEmpty())
-			return "";
+        if (poly.isEmpty())
+            return "";
 
-		return encodePolyline(poly, poly.is3D());
-	}
+        return encodePolyline(poly, poly.is3D());
+    }
 
 	public static String encodePolyline(PointList poly, boolean includeElevation) {
-		return encodePolyline(poly, includeElevation, 1e5);
-	}
+        return encodePolyline(poly, includeElevation, 1e5);
+    }
 
 	public static String encodePolyline(PointList poly, boolean includeElevation, double precision) {
-		StringBuilder sb = new StringBuilder();
-		int size = poly.getSize();
-		int prevLat = 0;
-		int prevLon = 0;
-		int prevEle = 0;
-		for (int i = 0; i < size; i++) {
-			int num = (int) Math.floor(poly.getLatitude(i) * precision);
-			encodeNumber(sb, num - prevLat);
-			prevLat = num;
-			num = (int) Math.floor(poly.getLongitude(i) * precision);
-			encodeNumber(sb, num - prevLon);
-			prevLon = num;
-			if (includeElevation) {
-				num = (int) Math.floor(poly.getElevation(i) * 100);
-				encodeNumber(sb, num - prevEle);
-				prevEle = num;
-			}
-		}
-		return sb.toString();
-	}
+        StringBuilder sb = new StringBuilder();
+        int size = poly.getSize();
+        int prevLat = 0;
+        int prevLon = 0;
+        int prevEle = 0;
+        for (int i = 0; i < size; i++) {
+            int num = (int) Math.floor(poly.getLatitude(i) * precision);
+            encodeNumber(sb, num - prevLat);
+            prevLat = num;
+            num = (int) Math.floor(poly.getLongitude(i) * precision);
+            encodeNumber(sb, num - prevLon);
+            prevLon = num;
+            if (includeElevation) {
+                num = (int) Math.floor(poly.getElevation(i) * 100);
+                encodeNumber(sb, num - prevEle);
+                prevEle = num;
+            }
+        }
+        return sb.toString();
+    }
 
 	private static void encodeNumber(StringBuilder sb, int num) {
-		num = num << 1;
-		if (num < 0) {
-			num = ~num;
-		}
-		while (num >= 0x20) {
-			int nextValue = (0x20 | (num & 0x1f)) + 63;
-			sb.append((char) (nextValue));
-			num >>= 5;
-		}
-		num += 63;
-		sb.append((char) (num));
-	}
+        num = num << 1;
+        if (num < 0) {
+            num = ~num;
+        }
+        while (num >= 0x20) {
+            int nextValue = (0x20 | (num & 0x1f)) + 63;
+            sb.append((char) (nextValue));
+            num >>= 5;
+        }
+        num += 63;
+        sb.append((char) (num));
+    }
 
 	public static String toGeojson(PointList inputLineString, boolean enableElevation) {
 		String ret = "{\"type\": \"LineString\", \"coordinates\":[";
@@ -176,14 +176,21 @@ public class WebHelper {
 		ret += tmp[tmp.length-1] + "]}";
 		return ret;
 	}
+	
+	public static final String COPYRIGHTS = "[\"GraphHopper\", \"OpenStreetMap contributors\",\"DESP\"]";
+
+    public static ObjectNode jsonResponsePutInfo(ObjectNode json, float took) {
+        final ObjectNode info = json.putObject("info");
+        info.putPOJO("copyrights", COPYRIGHTS);
+        info.put("took", Math.round(took * 1000));
+        return json;
+    }
 
 	public static ObjectNode jsonObject(GHResponse ghRsp, boolean enableInstructions, boolean calcPoints,
 			boolean enableElevation, boolean pointsEncoded, float took) {
 		ObjectNode json = JsonNodeFactory.instance.objectNode();
 		//json.putPOJO("hints", ghRsp.getHints().toMap());
-		final ObjectNode info = json.putObject("info");
-		info.putArray("copyrights").add("GraphHopper").add("OpenStreetMap Data").add("Speed3D");
-		info.put("took", Math.round(took * 1000));
+		jsonResponsePutInfo(json, took);
 		ArrayNode jsonPathList = json.putArray("paths");
 		for (PathWrapper ar : ghRsp.getAll()) {
 			ObjectNode jsonPath = jsonPathList.addObject();

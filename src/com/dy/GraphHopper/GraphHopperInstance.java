@@ -5,7 +5,9 @@ import java.io.Serializable;
 import com.graphhopper.GHRequest;
 import com.graphhopper.GraphHopper;
 import com.graphhopper.reader.dem.ElevationProvider;
+import com.graphhopper.routing.util.DefaultFlagEncoderFactory;
 import com.graphhopper.routing.util.EncodingManager;
+import com.graphhopper.util.GHUtility;
 import com.graphhopper.util.Parameters.Routing;
 
 public class GraphHopperInstance implements Serializable {
@@ -16,20 +18,20 @@ public class GraphHopperInstance implements Serializable {
 	private static final long serialVersionUID = 3244935579291336567L;
 	private static GraphHopper hopper;
 	static final double highWaySpeed = 80.0;
-	static final String roadStatusURL = "http://192.168.1.15:8080/graphhopperRouting/roudStatusServlet";
+	static final String roadStatusURL = "http://localhost:8080/Routing/roudStatusServlet";
 
 	private static void init() {
-		GraphHopperInstance.setGraphHopperLocation("/home/dy/Desktop/Data");
+		GraphHopperInstance.setGraphHopperLocation("D:\\Data\\PBF\\GraphHopper");
 		GraphHopperInstance.setCHEnabled(false);
-//		GraphHopperInstance.setEnableInstructions(false);
 		GraphHopperInstance.setMaxVisitedNodes(1000000);
-//		GraphHopperInstance.setPreferredLanguage("cn");
-//		GraphHopperInstance.setEncodingManager("generic,car");
+		GraphHopperInstance.setEncodingManager("generic,car,foot,bike");
 		GraphHopperInstance.setWayPointMaxDistance(1000000);
 		GraphHopperInstance.setCHThreads(3);
-		GraphHopperInstance.setDataReaderFile("/home/dy/Desktop/Data/china.osm.pbf");
+		GraphHopperInstance.setDataReaderFile("D:\\Data\\PBF\\china\\china.osm.pbf");
 		GraphHopperInstance.load();
 	}
+
+	
 
 	// 使用双重校验锁方式实现单例
 	public static GraphHopper getInstance() {
@@ -61,10 +63,6 @@ public class GraphHopperInstance implements Serializable {
 		hopper.importOrLoad();
 	}
 
-//	public static void setEnableInstructions(boolean enable) {
-//		hopper.setEnableInstructions(enable);
-//	}
-
 	public static void setElevationProvider(ElevationProvider elevationProvider) {
 		hopper.setElevationProvider(elevationProvider);
 	}
@@ -80,10 +78,6 @@ public class GraphHopperInstance implements Serializable {
 	public static void setWayPointMaxDistance(int distance) {
 		hopper.setWayPointMaxDistance(distance);
 	}
-
-//	public static void setPreferredLanguage(String language) {
-//		hopper.setPreferredLanguage(language);
-//	}
 
 	public static void setMaxVisitedNodes(int count) {
 		hopper.setMaxVisitedNodes(count);
@@ -104,7 +98,15 @@ public class GraphHopperInstance implements Serializable {
 	}
 
 	// 可接受的参数 car,foot,bike,bike2,mtb,racingbike,motorcycle
-//	public static void setEncodingManager(String manager) {
-//		hopper.setEncodingManager(new EncodingManager(manager, 8));
-//	}
+	public static void setEncodingManager(String manager) {
+		GraphHopperInstance.setEncodingManager(false, "cn", manager);
+	}
+	
+	private static void setEncodingManager(boolean enableInstructions, String language, String manager) {
+		EncodingManager.Builder builder = GHUtility.addDefaultEncodedValues(new EncodingManager.Builder(8));
+		builder.addAll(new DefaultFlagEncoderFactory(), manager);
+		builder.setEnableInstructions(enableInstructions);
+		builder.setPreferredLanguage(language);
+		hopper.setEncodingManager(builder.build());
+	}
 }

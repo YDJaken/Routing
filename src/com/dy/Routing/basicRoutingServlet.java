@@ -12,6 +12,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.dy.GraphHopper.GraphHopperInstance;
 import com.dy.GraphHopper.WebHelper;
+import com.dy.Util.ServletUtil;
+import com.dy.Util.TypeEnum;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.graphhopper.GHRequest;
 import com.graphhopper.GHResponse;
@@ -41,16 +45,35 @@ public class basicRoutingServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		GraphHopper hopper = GraphHopperInstance.getInstance();
-		String position = request.getParameter("position");
+		String position = (String) ServletUtil.getRequestParameter(request, "position");
+		ObjectNode data = null;
 		if (position == null)
 			return;
-		String highway = request.getParameter("weighting");
+		if (ServletUtil.isJsonString(position)) {
+			ObjectMapper mapper = new ObjectMapper();
+			data = mapper.readValue(position, ObjectNode.class);
+			position = data.get("position").textValue();
+			if (position == null) {
+				return;
+			}
+		}
+		String highway = null;
+		if (data != null) {
+			JsonNode tmp = data.get("weighting");
+			if (tmp != null) {
+				highway = tmp.textValue();
+			}
+		} else {
+			highway = (String) ServletUtil.getRequestParameter(request, "weighting");
+		}
+
 		List<GHPoint> points = WebHelper.decodePoints(position);
-		GHRequest req = new GHRequest(points).setVehicle("generic").setWeighting("generic")
+		String vehicle = (String) basicIsoChroneServlet.loadValue("vehicle", data, "generic", TypeEnum.String, request);
+		GHRequest req = new GHRequest(points).setVehicle(vehicle).setWeighting("fastest")
 				.setLocale(Locale.SIMPLIFIED_CHINESE);
 		if (points.size() == 2) {
 			req.setAlgorithm("alternative_route");
-			String maxPath = request.getParameter("maxPath");
+			String maxPath = (String) ServletUtil.getRequestParameter(request, "maxPath");
 			if (maxPath == null) {
 				maxPath = "3";
 			}
@@ -59,7 +82,16 @@ public class basicRoutingServlet extends HttpServlet {
 		if (highway != null && !highway.equals("")) {
 			req.setWeighting(highway);
 		}
-		String blockArea = request.getParameter("blockArea");
+		String blockArea = null;
+		if (data != null) {
+			JsonNode tmp = data.get("blockArea");
+			if (tmp != null) {
+				blockArea = tmp.textValue();
+			}
+		} else {
+			blockArea = (String) ServletUtil.getRequestParameter(request, "blockArea");
+		}
+
 		if (blockArea != null) {
 			GraphHopperInstance.setBlock_area(req, blockArea);
 		}
@@ -106,7 +138,8 @@ public class basicRoutingServlet extends HttpServlet {
 			response.getWriter().close();
 			return;
 		}
-		ObjectNode node = WebHelper.jsonObject(rsp, hopper.isEnableInstructions(), true, true, false, 121.0f);
+		ObjectNode node = WebHelper.jsonObject(rsp, hopper.getEncodingManager().isEnableInstructions(), true, true,
+				false, 121.0f);
 		response.getWriter().write(node.toString());
 		response.getWriter().flush();
 		response.getWriter().close();
