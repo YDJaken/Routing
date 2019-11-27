@@ -30,9 +30,9 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>com</name>
+			<name>java</name>
 			<type>2</type>
-			<location>C:/Users/hp/IdeaProjects/JAVAUtil/com</location>
+			<location>C:/Users/hp/IdeaProjects/JAVAUtil/src/main/java</location>
 		</link>
 	</linkedResources>
 </projectDescription>
