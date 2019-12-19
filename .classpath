@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry excluding="com/dy/Filter/|com/dy/ImageUtil/|com/dy/GeoTools/|com/dy/Util/ImageUtill.java|com/dy/Util/GeoTiffUtil.java" kind="src" path="java"/>
+	<classpathentry excluding="com/dy/Filter/|com/dy/ImageUtil/|com/dy/GeoTools/|com/dy/Util/ImageUtill.java|com/dy/Util/GeoTiffUtil.java|com/dy/Util/ShapeUtil.java|com/dy/Util/ShapeGeoJSONUtil.java|com/dy/Util/CRSUtil.java|com/dy/Util/JSONObjectUtil.java" kind="src" path="java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jre1.8.0_201">
 		<attributes>
 			<attribute name="owner.project.facets" value="java"/>
