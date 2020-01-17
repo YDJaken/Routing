@@ -1,5 +1,6 @@
 package com.dy.GraphHopper;
 
+import java.io.File;
 import java.io.Serializable;
 
 import com.graphhopper.GHRequest;
@@ -21,17 +22,17 @@ public class GraphHopperInstance implements Serializable {
 	static final String roadStatusURL = "http://localhost:8080/Routing/roudStatusServlet";
 
 	private static void init() {
-		GraphHopperInstance.setGraphHopperLocation("D:\\Data\\PBF\\GraphHopper");
+		GraphHopperInstance.setGraphHopperLocation(
+				File.separator.equals("/") ? "/data2/DESP_DATA/GraphHopper" : "D:\\Data\\PBF\\GraphHopper");
 		GraphHopperInstance.setCHEnabled(false);
 		GraphHopperInstance.setMaxVisitedNodes(1000000);
 		GraphHopperInstance.setEncodingManager("generic,car,foot,bike");
 		GraphHopperInstance.setWayPointMaxDistance(1000000);
 		GraphHopperInstance.setCHThreads(3);
-		GraphHopperInstance.setDataReaderFile("D:\\Data\\PBF\\china\\china.osm.pbf");
+		GraphHopperInstance.setDataReaderFile(
+				File.separator.equals("/") ? "/data2/DESP_DATA/GraphHopper/china.osm.pbf" : "D:\\Data\\PBF\\china\\china.osm.pbf");
 		GraphHopperInstance.load();
 	}
-
-	
 
 	// 使用双重校验锁方式实现单例
 	public static GraphHopper getInstance() {
@@ -101,7 +102,7 @@ public class GraphHopperInstance implements Serializable {
 	public static void setEncodingManager(String manager) {
 		GraphHopperInstance.setEncodingManager(false, "cn", manager);
 	}
-	
+
 	private static void setEncodingManager(boolean enableInstructions, String language, String manager) {
 		EncodingManager.Builder builder = GHUtility.addDefaultEncodedValues(new EncodingManager.Builder(8));
 		builder.addAll(new DefaultFlagEncoderFactory(), manager);
